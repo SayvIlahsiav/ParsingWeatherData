@@ -46,15 +46,16 @@ public class ParsingWeatherData
     {
         CSVRecord lowestSoFar = null;
         DirectoryResource dr = new DirectoryResource();
-        String fileName = null;
+        String coldestFileName = null;
         for (File f : dr.selectedFiles())
         {
-            fileName = f.getName();
             FileResource fr = new FileResource(f);
             CSVRecord currentRow = coldestHourInFile(fr.getCSVParser());
             lowestSoFar = lowestOfTwo(currentRow, lowestSoFar, "TemperatureF");
+            if (lowestSoFar == currentRow) 
+                coldestFileName = f.getName();
         }
-        return fileName;
+        return coldestFileName;
     }
     
     public CSVRecord lowestHumidityInFile(CSVParser parser)
@@ -123,10 +124,17 @@ public class ParsingWeatherData
         FileResource fr = new FileResource();
         CSVParser parser = fr.getCSVParser();
         CSVRecord lowest = coldestHourInFile(parser);
+        String time = "";
+        if (lowest.isMapped("TimeEST") && lowest.get("TimeEST") != null) 
+            time = lowest.get("TimeEST");
+        else if (lowest.isMapped("TimeEDT") && lowest.get("TimeEDT") != null) 
+            time = lowest.get("TimeEDT");
+        else 
+        time = "No time data";
         System.out.println("Coldest hour in the day was " 
                             + lowest.get("TemperatureF") 
                             + "F at " 
-                            + lowest.get("TimeEST"));
+                            + time);
     }
     
     public void testColdestDayInFiles()
