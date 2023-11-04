@@ -81,6 +81,43 @@ public class ParsingWeatherData
         return lowestSoFar;
     }
     
+    public double  averageTemperatureInFile(CSVParser parser)
+    {
+        double sumTemp = 0.0;
+        int tempCount = 0;
+        for (CSVRecord currentRow : parser)
+        {
+            tempCount++;
+            double currentTemp = Double.parseDouble(currentRow.get("TemperatureF"));
+            if (currentTemp != -9999)
+                sumTemp += currentTemp;
+        }
+        return sumTemp/tempCount;
+    }
+    
+    public double averageTemperatureWithHighHumidityInFile(CSVParser parser, int value)
+    {
+        double sumTemp = 0.0;
+        int humCount = 0;
+        for (CSVRecord currentRow : parser)
+        {
+            if(!currentRow.get("Humidity").equals("N/A"))
+            {
+                int current = Integer.parseInt(currentRow.get("Humidity"));
+                double currentTemp = Double.parseDouble(currentRow.get("TemperatureF"));
+                if(current >= value && currentTemp != -9999)
+                {
+                    humCount++;
+                    sumTemp += currentTemp;
+                }    
+            }
+        }
+        if (humCount == 0)
+            return 0.0;
+        else
+            return sumTemp/humCount;
+    }
+    
     public void testColdestHourInFile()
     {
         FileResource fr = new FileResource();
@@ -128,12 +165,33 @@ public class ParsingWeatherData
                             + lowest.get("DateUTC"));
     }
     
+    public void testAverageTemperatureInFile()
+    {
+        FileResource fr = new FileResource();
+        CSVParser parser = fr.getCSVParser();
+        double avgTemp = averageTemperatureInFile(parser);
+        System.out.println("Average temperature in file is " + avgTemp);
+    }
+    
+    public void testAverageTemperatureWithHighHumidityInFile()
+    {
+        FileResource fr = new FileResource();
+        CSVParser parser = fr.getCSVParser();
+        double avgTemp = averageTemperatureWithHighHumidityInFile(parser, 80);
+        if (avgTemp == 0.0)
+            System.out.println("No temperatures with that humidity");
+        else
+            System.out.println("Average Temp when high Humidity is " + avgTemp);
+    }
+    
     public static void main(String[] args)
     {
         ParsingWeatherData pwd1 = new ParsingWeatherData();
         //pwd1.testColdestHourInFile();
         //pwd1.testColdestDayInFiles();
         //pwd1.testLowestHumidityInFile();
-        pwd1.testLowestHumidityInFiles();
+        //pwd1.testLowestHumidityInFiles();
+        //pwd1.testAverageTemperatureInFile();
+        pwd1.testAverageTemperatureWithHighHumidityInFile();
     }
 }
