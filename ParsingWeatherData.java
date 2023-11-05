@@ -47,15 +47,21 @@ public class ParsingWeatherData
         CSVRecord lowestSoFar = null;
         DirectoryResource dr = new DirectoryResource();
         String coldestFileName = null;
+        String coldestYear = "";
         for (File f : dr.selectedFiles())
         {
+            String name = f.getName();
+            String year = name.substring(8, 12);
             FileResource fr = new FileResource(f);
             CSVRecord currentRow = coldestHourInFile(fr.getCSVParser());
             lowestSoFar = lowestOfTwo(currentRow, lowestSoFar, "TemperatureF");
             if (lowestSoFar == currentRow) 
+            {
                 coldestFileName = f.getName();
+                coldestYear = year;
+            }
         }
-        return coldestFileName;
+        return coldestFileName.isEmpty() ? "" : "nc_weather/" + coldestYear + "/" + coldestFileName;
     }
     
     public CSVRecord lowestHumidityInFile(CSVParser parser)
@@ -140,10 +146,10 @@ public class ParsingWeatherData
     public void testColdestDayInFiles()
     {
         String coldestFile = coldestDayInFiles();
-        FileResource fr = new FileResource("nc_weather/2014/" + coldestFile);
+        FileResource fr = new FileResource(coldestFile);
         CSVParser parser = fr.getCSVParser();
         CSVRecord lowest = coldestHourInFile(parser);
-        System.out.println("Coldest day was in file " + coldestFile);
+        System.out.println("Coldest day was in file " + coldestFile.substring(16));
         System.out.println("Coldest temperature on that day was " + lowest.get("TemperatureF"));
         System.out.println("All the Temperatures on the coldest day were:");
         parser = fr.getCSVParser();
@@ -195,11 +201,28 @@ public class ParsingWeatherData
     public static void main(String[] args)
     {
         ParsingWeatherData pwd1 = new ParsingWeatherData();
-        //pwd1.testColdestHourInFile();
-        //pwd1.testColdestDayInFiles();
-        //pwd1.testLowestHumidityInFile();
-        //pwd1.testLowestHumidityInFiles();
-        //pwd1.testAverageTemperatureInFile();
-        pwd1.testAverageTemperatureWithHighHumidityInFile();
+        Scanner scn = new Scanner(System.in);
+        while (true)
+        {
+            System.out.println();
+            System.out.println("What do you want to do? Type 1, 2, 3, 4, 5, 6 or 7: ");
+            System.out.println("1 - Find coldest hour in a day.");
+            System.out.println("2 - Find coldest hour in many days.");
+            System.out.println("3 - Find lowest humidity in a day.");
+            System.out.println("4 - Find lowest humidity in many days.");
+            System.out.println("5 - Find average temperature in a day.");
+            System.out.println("6 - Find average temperature with high humidity in a day.");
+            System.out.println("7 - Stop.");
+            String choice = scn.nextLine();
+            if (choice.equals("7")) break;
+            if (choice.equals("1")) pwd1.testColdestHourInFile();
+            else if (choice.equals("2")) pwd1.testColdestDayInFiles();
+            else if (choice.equals("3")) pwd1.testLowestHumidityInFile();
+            else if (choice.equals("4")) pwd1.testLowestHumidityInFiles();
+            else if (choice.equals("5")) pwd1.testAverageTemperatureInFile();
+            else if (choice.equals("6")) pwd1.testAverageTemperatureWithHighHumidityInFile();
+            else System.out.println("Invalid choice. Please enter a number from 1 to 7.");
+        }
+        scn.close();
     }
 }
